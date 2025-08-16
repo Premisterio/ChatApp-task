@@ -19,10 +19,10 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     ports:
-      - "8000:8000"
+      - "8080:8000"
     environment:
       - DATABASE_URL=postgresql://messenger_user:messenger_password@postgres:5432/messenger_db
-      - SECRET_KEY=your-super-secret-key-change-this-in-production
+      - SECRET_KEY=R5L4Vq-OnBR7X1NpuSn1On4Mq_NWebgWcv5hBbUYUaA
     depends_on:
       - postgres
     volumes:
