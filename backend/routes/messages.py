@@ -16,6 +16,72 @@ router = APIRouter(prefix="/messages", tags=["messages"])
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
+# WebSocket notification functions (will be imported dynamically to avoid circular imports)
+async def send_websocket_notification(notification_type: str, message_data: dict, recipient_id: int):
+    """Send WebSocket notification if manager is available."""
+    try:
+        from websocket_manager import manager
+        if notification_type == "new_message":
+            await manager.send_to_user({
+                "type": "new_message",
+                "message": message_data
+            }, recipient_id)
+        elif notification_type == "message_updated":
+            await manager.send_to_user({
+                "type": "message_updated",
+                "message": message_data
+            }, recipient_id)
+        elif notification_type == "message_deleted":
+            await manager.send_to_user({
+                "type": "message_deleted",
+                "message_id": message_data
+            }, recipient_id)
+    except ImportError:
+        # WebSocket manager not available, skip notification
+        pass
+    except Exception as e:
+        # Log error but don't fail the request
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"WebSocket notification failed: {e}")
+
+def serialize_message_for_websocket(db_message: Message, sender: User, recipient: User) -> dict:
+    """Convert message to dictionary for WebSocket transmission."""
+    return {
+        "id": db_message.id,
+        "content": db_message.content,
+        "sender_id": db_message.sender_id,
+        "recipient_id": db_message.recipient_id,
+        "created_at": db_message.created_at.isoformat(),
+        "updated_at": db_message.updated_at.isoformat() if db_message.updated_at else None,
+        "is_edited": db_message.is_edited,
+        "is_deleted": db_message.is_deleted,
+        "sender": {
+            "id": sender.id,
+            "username": sender.username,
+            "email": sender.email,
+            "is_active": sender.is_active,
+            "created_at": sender.created_at.isoformat()
+        },
+        "recipient": {
+            "id": recipient.id,
+            "username": recipient.username,
+            "email": recipient.email,
+            "is_active": recipient.is_active,
+            "created_at": recipient.created_at.isoformat()
+        },
+        "attachments": [
+            {
+                "id": att.id,
+                "filename": att.filename,
+                "original_filename": att.original_filename,
+                "file_size": att.file_size,
+                "content_type": att.content_type,
+                "uploaded_at": att.uploaded_at.isoformat()
+            } for att in db_message.attachments
+        ]
+    }
+
 @router.post("/", response_model=MessageResponse)
 async def send_message(
     content: str = Form(...),
@@ -55,8 +121,8 @@ async def send_message(
             
             # Save file
             with open(file_path, "wb") as buffer:
-                content = await file.read()
-                buffer.write(content)
+                content_bytes = await file.read()
+                buffer.write(content_bytes)
             
             # Create attachment record
             attachment = MessageAttachment(
@@ -64,7 +130,7 @@ async def send_message(
                 filename=unique_filename,
                 original_filename=file.filename,
                 file_path=file_path,
-                file_size=len(content),
+                file_size=len(content_bytes),
                 content_type=file.content_type
             )
             
@@ -72,6 +138,10 @@ async def send_message(
     
     db.commit()
     db.refresh(db_message)
+    
+    # Send WebSocket notification to recipient
+    message_dict = serialize_message_for_websocket(db_message, current_user, recipient)
+    await send_websocket_notification("new_message", message_dict, recipient_id)
     
     return db_message
 
@@ -141,7 +211,7 @@ def get_messages_with_user(
     return messages
 
 @router.put("/{message_id}", response_model=MessageResponse)
-def update_message(
+async def update_message(
     message_id: int,
     message_update: MessageUpdate,
     current_user: User = Depends(get_current_active_user),
@@ -168,10 +238,18 @@ def update_message(
     db.commit()
     db.refresh(db_message)
     
+    # Get recipient for WebSocket notification
+    recipient = db.query(User).filter(User.id == db_message.recipient_id).first()
+    
+    # Send WebSocket notification to recipient
+    if recipient:
+        message_dict = serialize_message_for_websocket(db_message, current_user, recipient)
+        await send_websocket_notification("message_updated", message_dict, db_message.recipient_id)
+    
     return db_message
 
 @router.delete("/{message_id}")
-def delete_message(
+async def delete_message(
     message_id: int,
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
@@ -191,8 +269,12 @@ def delete_message(
             detail="Not authorized to delete this message"
         )
     
+    recipient_id = db_message.recipient_id
     db_message.is_deleted = True
     db.commit()
+    
+    # Send WebSocket notification to recipient
+    await send_websocket_notification("message_deleted", message_id, recipient_id)
     
     return {"detail": "Message deleted successfully"}
 

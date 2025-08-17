@@ -1,0 +1,709 @@
+<!-- Created by Claude Sonnet 4 -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Messenger Test Client</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .auth-section {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            background: #f8f9fa;
+        }
+
+        .auth-section h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .auth-form {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .auth-form input {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .auth-form button {
+            padding: 10px 20px;
+            background: #4facfe;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .auth-form button:hover {
+            background: #3d8bfe;
+        }
+
+        .auth-form button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .main-content {
+            display: flex;
+            height: 600px;
+        }
+
+        .websocket-section {
+            flex: 1;
+            padding: 20px;
+            border-right: 1px solid #eee;
+        }
+
+        .messaging-section {
+            flex: 1;
+            padding: 20px;
+        }
+
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .status.connected {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.disconnected {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .messages {
+            height: 300px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            margin-bottom: 15px;
+        }
+
+        .message {
+            background: white;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #4facfe;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .message-timestamp {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .message-type {
+            font-weight: bold;
+            color: #4facfe;
+            margin-bottom: 5px;
+        }
+
+        .message-content {
+            font-family: monospace;
+            background: #f8f9fa;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #e9ecef;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+
+        .input-group input, .input-group select, .input-group textarea {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .input-group textarea {
+            resize: vertical;
+            min-height: 40px;
+        }
+
+        .input-group button {
+            padding: 10px 20px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            white-space: nowrap;
+            transition: background 0.3s;
+        }
+
+        .input-group button:hover {
+            background: #218838;
+        }
+
+        .input-group button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .controls button {
+            padding: 8px 16px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.3s;
+        }
+
+        .controls button:hover {
+            background: #5a6268;
+        }
+
+        .typing-indicator {
+            font-style: italic;
+            color: #666;
+            padding: 5px 0;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+                height: auto;
+            }
+
+            .websocket-section {
+                border-right: none;
+                border-bottom: 1px solid #eee;
+            }
+
+            .auth-form {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 WebSocket Messenger Test Client</h1>
+            <p>Test real-time messaging functionality</p>
+        </div>
+
+        <div class="auth-section">
+            <h3>Authentication</h3>
+            <div class="auth-form">
+                <input type="text" id="username" placeholder="Username" />
+                <input type="password" id="password" placeholder="Password" />
+                <button onclick="login()">Login</button>
+                <button onclick="register()">Register</button>
+                <span id="authStatus"></span>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="websocket-section">
+                <h3>WebSocket Connection</h3>
+                <div id="connectionStatus" class="status disconnected">Disconnected</div>
+                
+                <div class="controls">
+                    <button onclick="connectWebSocket()">Connect</button>
+                    <button onclick="disconnectWebSocket()">Disconnect</button>
+                    <button onclick="clearMessages()">Clear Messages</button>
+                </div>
+
+                <div id="wsMessages" class="messages"></div>
+
+                <div class="input-group">
+                    <select id="messageType">
+                        <option value="ping">Ping</option>
+                        <option value="typing">Typing Indicator</option>
+                        <option value="message_read">Message Read</option>
+                        <option value="get_online_status">Get Online Status</option>
+                    </select>
+                    <button onclick="sendTestMessage()">Send Test</button>
+                </div>
+            </div>
+
+            <div class="messaging-section">
+                <h3>Send Message</h3>
+                
+                <div class="input-group">
+                    <input type="number" id="recipientId" placeholder="Recipient User ID" />
+                    <button onclick="checkOnlineStatus()">Check Online</button>
+                </div>
+
+                <div class="input-group">
+                    <textarea id="messageContent" placeholder="Message content..."></textarea>
+                    <button onclick="sendMessage()">Send Message</button>
+                </div>
+
+                <div class="input-group">
+                    <input type="file" id="messageFile" multiple />
+                    <button onclick="sendMessageWithFile()">Send with File</button>
+                </div>
+
+                <div id="typingIndicator" class="typing-indicator"></div>
+
+                <h4>Recent Messages</h4>
+                <div id="recentMessages" class="messages"></div>
+
+                <div class="controls">
+                    <button onclick="loadMessages()">Load Messages</button>
+                    <button onclick="loadChats()">Load Chats</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let websocket = null;
+        let token = null;
+        let currentUserId = null;
+        const API_BASE = 'http://localhost:8000';
+        const WS_BASE = 'ws://localhost:8000';
+
+        // Authentication functions
+        async function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            if (!username || !password) {
+                updateAuthStatus('Please enter username and password', 'error');
+                return;
+            }
+
+            try {
+                const formData = new FormData();
+                formData.append('username', username);
+                formData.append('password', password);
+
+                const response = await fetch(`${API_BASE}/auth/token`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    token = data.access_token;
+                    
+                    // Get user info
+                    const userResponse = await fetch(`${API_BASE}/auth/me`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+                    
+                    if (userResponse.ok) {
+                        const userData = await userResponse.json();
+                        currentUserId = userData.id;
+                        updateAuthStatus(`Logged in as ${userData.username} (ID: ${userData.id})`, 'success');
+                    }
+                } else {
+                    const error = await response.json();
+                    updateAuthStatus(`Login failed: ${error.detail}`, 'error');
+                }
+            } catch (error) {
+                updateAuthStatus(`Login error: ${error.message}`, 'error');
+            }
+        }
+
+        async function register() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            if (!username || !password) {
+                updateAuthStatus('Please enter username and password', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        email: `${username}@test.com`,
+                        password: password
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    updateAuthStatus(`User registered successfully: ${data.username}`, 'success');
+                } else {
+                    const error = await response.json();
+                    updateAuthStatus(`Registration failed: ${error.detail}`, 'error');
+                }
+            } catch (error) {
+                updateAuthStatus(`Registration error: ${error.message}`, 'error');
+            }
+        }
+
+        function updateAuthStatus(message, type) {
+            const statusElement = document.getElementById('authStatus');
+            statusElement.textContent = message;
+            statusElement.style.color = type === 'success' ? 'green' : 'red';
+        }
+
+        // WebSocket functions
+        function connectWebSocket() {
+            if (!token) {
+                addWebSocketMessage('Error', 'Please login first');
+                return;
+            }
+
+            if (websocket) {
+                websocket.close();
+            }
+
+            websocket = new WebSocket(`${WS_BASE}/ws?token=${token}`);
+
+            websocket.onopen = function(event) {
+                updateConnectionStatus(true);
+                addWebSocketMessage('Connection', 'WebSocket connected successfully');
+            };
+
+            websocket.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                addWebSocketMessage('Received', JSON.stringify(data, null, 2));
+                
+                // Handle specific message types
+                if (data.type === 'new_message') {
+                    addRecentMessage(data.message);
+                } else if (data.type === 'typing') {
+                    showTypingIndicator(data.sender_id, data.is_typing);
+                }
+            };
+
+            websocket.onclose = function(event) {
+                updateConnectionStatus(false);
+                addWebSocketMessage('Connection', `WebSocket closed: ${event.code} - ${event.reason}`);
+            };
+
+            websocket.onerror = function(error) {
+                addWebSocketMessage('Error', `WebSocket error: ${error}`);
+            };
+        }
+
+        function disconnectWebSocket() {
+            if (websocket) {
+                websocket.close();
+                websocket = null;
+            }
+        }
+
+        function updateConnectionStatus(connected) {
+            const statusElement = document.getElementById('connectionStatus');
+            statusElement.textContent = connected ? 'Connected' : 'Disconnected';
+            statusElement.className = connected ? 'status connected' : 'status disconnected';
+        }
+
+        function addWebSocketMessage(type, content) {
+            const messagesDiv = document.getElementById('wsMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message';
+            
+            const timestamp = new Date().toLocaleTimeString();
+            messageDiv.innerHTML = `
+                <div class="message-timestamp">${timestamp}</div>
+                <div class="message-type">${type}</div>
+                <div class="message-content">${content}</div>
+            `;
+            
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function sendTestMessage() {
+            if (!websocket || websocket.readyState !== WebSocket.OPEN) {
+                addWebSocketMessage('Error', 'WebSocket not connected');
+                return;
+            }
+
+            const messageType = document.getElementById('messageType').value;
+            const recipientId = parseInt(document.getElementById('recipientId').value);
+
+            let message = { type: messageType };
+
+            switch (messageType) {
+                case 'ping':
+                    message.timestamp = Date.now();
+                    break;
+                case 'typing':
+                    if (recipientId) {
+                        message.recipient_id = recipientId;
+                        message.is_typing = true;
+                    }
+                    break;
+                case 'message_read':
+                    if (recipientId) {
+                        message.recipient_id = recipientId;
+                        message.message_id = 1; // Example message ID
+                    }
+                    break;
+                case 'get_online_status':
+                    message.user_ids = recipientId ? [recipientId] : [1, 2, 3];
+                    break;
+            }
+
+            websocket.send(JSON.stringify(message));
+            addWebSocketMessage('Sent', JSON.stringify(message, null, 2));
+        }
+
+        function clearMessages() {
+            document.getElementById('wsMessages').innerHTML = '';
+        }
+
+        // Messaging functions
+        async function sendMessage() {
+            const content = document.getElementById('messageContent').value;
+            const recipientId = document.getElementById('recipientId').value;
+
+            if (!content || !recipientId || !token) {
+                alert('Please enter message content, recipient ID, and login first');
+                return;
+            }
+
+            try {
+                const formData = new FormData();
+                formData.append('content', content);
+                formData.append('recipient_id', recipientId);
+
+                const response = await fetch(`${API_BASE}/messages/`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const message = await response.json();
+                    addRecentMessage(message);
+                    document.getElementById('messageContent').value = '';
+                } else {
+                    const error = await response.json();
+                    alert(`Failed to send message: ${error.detail}`);
+                }
+            } catch (error) {
+                alert(`Error sending message: ${error.message}`);
+            }
+        }
+
+        async function sendMessageWithFile() {
+            const content = document.getElementById('messageContent').value || 'File attachment';
+            const recipientId = document.getElementById('recipientId').value;
+            const files = document.getElementById('messageFile').files;
+
+            if (!recipientId || !token) {
+                alert('Please enter recipient ID and login first');
+                return;
+            }
+
+            try {
+                const formData = new FormData();
+                formData.append('content', content);
+                formData.append('recipient_id', recipientId);
+
+                for (let i = 0; i < files.length; i++) {
+                    formData.append('files', files[i]);
+                }
+
+                const response = await fetch(`${API_BASE}/messages/`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const message = await response.json();
+                    addRecentMessage(message);
+                    document.getElementById('messageContent').value = '';
+                    document.getElementById('messageFile').value = '';
+                } else {
+                    const error = await response.json();
+                    alert(`Failed to send message: ${error.detail}`);
+                }
+            } catch (error) {
+                alert(`Error sending message: ${error.message}`);
+            }
+        }
+
+        async function loadMessages() {
+            const recipientId = document.getElementById('recipientId').value;
+
+            if (!recipientId || !token) {
+                alert('Please enter recipient ID and login first');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/messages/${recipientId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const messages = await response.json();
+                    const messagesDiv = document.getElementById('recentMessages');
+                    messagesDiv.innerHTML = '';
+
+                    messages.reverse().forEach(message => {
+                        addRecentMessage(message);
+                    });
+                }
+            } catch (error) {
+                alert(`Error loading messages: ${error.message}`);
+            }
+        }
+
+        async function loadChats() {
+            if (!token) {
+                alert('Please login first');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/messages/chats`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const chats = await response.json();
+                    addWebSocketMessage('Chats', JSON.stringify(chats, null, 2));
+                }
+            } catch (error) {
+                alert(`Error loading chats: ${error.message}`);
+            }
+        }
+
+        function addRecentMessage(message) {
+            const messagesDiv = document.getElementById('recentMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message';
+            
+            const timestamp = new Date(message.created_at).toLocaleString();
+            const isOwnMessage = message.sender_id === currentUserId;
+            
+            messageDiv.innerHTML = `
+                <div class="message-timestamp">${timestamp}</div>
+                <div class="message-type">
+                    ${isOwnMessage ? 'You' : message.sender.username} → 
+                    ${isOwnMessage ? message.recipient.username : 'You'}
+                    ${message.is_edited ? ' (edited)' : ''}
+                </div>
+                <div class="message-content">${message.content}</div>
+                ${message.attachments.length > 0 ? 
+                    `<div><strong>Attachments:</strong> ${message.attachments.map(a => a.original_filename).join(', ')}</div>` : ''}
+            `;
+            
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function showTypingIndicator(senderId, isTyping) {
+            const indicator = document.getElementById('typingIndicator');
+            if (isTyping) {
+                indicator.textContent = `User ${senderId} is typing...`;
+            } else {
+                indicator.textContent = '';
+            }
+        }
+
+        function checkOnlineStatus() {
+            const recipientId = document.getElementById('recipientId').value;
+            if (websocket && websocket.readyState === WebSocket.OPEN && recipientId) {
+                const message = {
+                    type: 'get_online_status',
+                    user_ids: [parseInt(recipientId)]
+                };
+                websocket.send(JSON.stringify(message));
+                addWebSocketMessage('Sent', JSON.stringify(message, null, 2));
+            }
+        }
+
+        // Auto-connect typing indicators
+        document.getElementById('messageContent').addEventListener('input', function() {
+            const recipientId = document.getElementById('recipientId').value;
+            if (websocket && websocket.readyState === WebSocket.OPEN && recipientId) {
+                const message = {
+                    type: 'typing',
+                    recipient_id: parseInt(recipientId),
+                    is_typing: this.value.length > 0
+                };
+                websocket.send(JSON.stringify(message));
+            }
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('WebSocket Messenger Test Client loaded');
+        });
+    </script>
+</body>
+</html>

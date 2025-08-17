@@ -8,7 +8,7 @@ from contextlib import asynccontextmanager
 
 from database import engine
 from models import Base
-from routes import auth, messages
+from routes import auth, messages, websocket
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -38,8 +38,8 @@ async def lifespan(app: FastAPI):
 # Create FastAPI app
 app = FastAPI(
     title="Messenger API",
-    description="A simple messenger application with file attachments",
-    version="1.0.1",
+    description="A real-time messenger application with file attachments and WebSocket support",
+    version="1.1.0",
     lifespan=lifespan
 )
 
@@ -49,7 +49,8 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:5173", 
         "http://localhost:3000",
-        "https://your-frontend-domain.vercel.app" # I'll add it later
+        "http://localhost:8080",
+        "vercel link here" # Will add in prod
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -62,13 +63,15 @@ app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 # Include routers
 app.include_router(auth.router)
 app.include_router(messages.router)
+app.include_router(websocket.router)
 
 @app.get("/")
 def read_root():
     return {
-        "message": "Messenger API is running",
-        "version": "1.0.0",
-        "docs": "/docs"
+        "message": "Messenger API + WebSocket support is running",
+        "version": "1.1.0",
+        "docs": "/docs",
+        "websocket": "/ws"
     }
 
 @app.get("/health")
@@ -83,7 +86,8 @@ def health_check():
         return {
             "status": "healthy", 
             "database": "connected",
-            "version": "1.0.0"
+            "version": "1.1.0",
+            "websocket": "available"
         }
     except Exception as e:
         logger.error(f"Health check failed: {e}")
