@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   postgres:
@@ -11,41 +11,27 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    networks:
-      - messenger-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U messenger_user -d messenger_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     ports:
-      - "8080:8000"
+      - "8000:8000"
     environment:
       - DATABASE_URL=postgresql://messenger_user:messenger_password@postgres:5432/messenger_db
-      - SECRET_KEY=R5L4Vq-OnBR7X1NpuSn1On4Mq_NWebgWcv5hBbUYUaA
+      - SECRET_KEY=your-super-secret-jwt-key-change-this
+      - ENVIRONMENT=development
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     volumes:
       - ./backend/uploads:/app/uploads
-    networks:
-      - messenger-network
-
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
-    environment:
-      - VITE_API_URL=http://localhost:8000
-    depends_on:
-      - backend
-    networks:
-      - messenger-network
 
 volumes:
   postgres_data:
-
-networks:
-  messenger-network:
-    driver: bridge
