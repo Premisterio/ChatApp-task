@@ -1,4 +1,5 @@
-import React, { createContext, useState, useEffect, ReactNode } from "react";
+/* eslint-disable react-refresh/only-export-components */
+import { createContext, useState, useEffect, type ReactNode } from "react";
 import { getMe } from "../api/auth";
 
 interface User {
