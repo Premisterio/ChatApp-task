@@ -1,4 +1,3 @@
-// frontend/src/components/Chat/MessageInput.tsx
 import React, { useState, useRef } from "react";
 
 interface MessageInputProps {

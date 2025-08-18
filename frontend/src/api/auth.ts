@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:8000"; // Will change to .env in prod
+const API_URL = "http://localhost:8000"; // Change this to .env in prod
 
 export const login = async (username: string, password: string) => {
   const formData = new URLSearchParams();

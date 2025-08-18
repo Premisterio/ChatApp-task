@@ -1,4 +1,3 @@
-// frontend/src/components/Auth/RegisterForm.tsx - Enhanced with better styling
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { register as registerApi } from "../../api/auth";

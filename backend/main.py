@@ -39,7 +39,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="Messenger API",
     description="A real-time messenger application with file attachments and WebSocket support",
-    version="1.1.0",
+    version="1.2.0",
     lifespan=lifespan
 )
 
@@ -51,7 +51,7 @@ app.add_middleware(
         "http://localhost:3000",
         "http://localhost:8080",
         "http://127.0.0.1:5500",
-        "vercel link here" # Will add in prod
+        "Vercel link here" # Add in prod
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -88,7 +88,7 @@ def health_check():
         return {
             "status": "healthy", 
             "database": "connected",
-            "version": "1.1.0",
+            "version": "1.2.0",
             "websocket": "available"
         }
     except Exception as e:

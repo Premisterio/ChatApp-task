@@ -2,7 +2,7 @@ export class WebSocketManager {
   private ws: WebSocket | null = null;
 
   connect(token: string, onMessage: (data: any) => void) {
-    this.ws = new WebSocket(`ws://localhost:8000/ws?token=${token}`);  // Will change localhost to an actual api link
+    this.ws = new WebSocket(`ws://localhost:8000/ws?token=${token}`);  // Change this in prod
 
     this.ws.onopen = () => console.log("✅ WebSocket connected");
     this.ws.onmessage = (event) => {

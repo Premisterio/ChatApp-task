@@ -2,7 +2,7 @@ import React, { useState, useContext } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import axios from "axios";
 
-const API_URL = "http://localhost:8000"; // Will change to .env in prod
+const API_URL = "http://localhost:8000"; // Change this to .env in prod
 
 interface User {
   id: number;

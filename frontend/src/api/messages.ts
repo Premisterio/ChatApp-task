@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:8000"; // Will change to .env in prod
+const API_URL = "http://localhost:8000"; // Change this to .env in prod
 
 export const getChats = async (token: string) => {
   const res = await axios.get(`${API_URL}/messages/chats`, {
