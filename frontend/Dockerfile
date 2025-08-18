@@ -1,4 +1,4 @@
-FROM node:22.13.0-alpine AS build
+FROM node:22.12.0 as build
 
 WORKDIR /app
 
@@ -23,7 +23,7 @@ ENV VITE_WS_URL=$VITE_WS_URL
 RUN npm run build
 
 # Production stage with nginx
-FROM nginx:1.27.0-alpine
+FROM nginx:alpine
 
 # Copy custom nginx config
 COPY nginx.conf /etc/nginx/nginx.conf

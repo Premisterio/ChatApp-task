@@ -54,7 +54,7 @@ const Navbar = () => {
                 <p className="font-semibold text-gray-900">{auth.user.username}</p>
                 <p className="text-sm text-gray-500">{auth.user.email}</p>
               </div>
-              <div className="border-t pt-2">
+              <div className="pt-2">
                 <button
                   onClick={() => {
                     auth.logout();

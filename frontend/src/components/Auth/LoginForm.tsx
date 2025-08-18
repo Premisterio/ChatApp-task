@@ -142,8 +142,6 @@ const LoginForm: React.FC = () => {
         <div className="text-center">
           <p className="text-xs text-gray-500">
             Volodymyr Hrehul {"|"} 2025 {" "}
-            <a href="https://www.linkedin.com/in/volodymyr-hrehul" className="text-blue-600 hover:text-blue-500">LinkedIn</a>
-            {" "}/{" "}
             <a href="https://github.com/Premisterio" className="text-blue-600 hover:text-blue-500">GitHub</a>
           </p>
         </div>
