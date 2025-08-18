@@ -71,7 +71,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
   };
 
   const getAttachmentUrl = (filename: string) => {
-    return `http://localhost:8000/attachments/${filename}`;
+    return `http://localhost:8000/messages/attachments/${filename}`;
   };
 
   if (message.is_deleted) {
@@ -125,13 +125,13 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
                     setIsEditing(false);
                     setEditContent(message.content);
                   }}
-                  className="px-3 py-1 text-xs bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
+                  className="px-3 py-1 text-xs bg-red-400 text-white rounded hover:bg-red-600"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleEdit}
-                  className="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
+                  className="px-3 py-1 text-xs bg-green-400 text-white rounded hover:bg-green-700"
                 >
                   Save
                 </button>

@@ -89,10 +89,10 @@ const Dashboard = () => {
         ) : (
           <div className="flex-1 flex items-center justify-center bg-gray-50">
             <div className="text-center text-gray-500">
-              <div className="text-6xl mb-4">💬</div>
+              <div className="text-6xl mb-4">✍️(◔◡◔)</div>
               <h2 className="text-2xl font-semibold mb-2">Welcome to Messenger</h2>
               <p className="mb-4">Select a chat to start messaging</p>
-              <p className="text-sm">Or click the + button to start a new conversation</p>
+              <p className="text-sm">Or click the <span className="text-red-500">+</span> button to start a new conversation</p>
             </div>
           </div>
         )}
