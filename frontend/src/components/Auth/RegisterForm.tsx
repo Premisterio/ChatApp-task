@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { register as registerApi } from "../../api/auth";
+import { useNavigate } from "react-router-dom";
 
 const RegisterForm = () => {
   const [username, setUsername] = useState("");
@@ -7,6 +8,7 @@ const RegisterForm = () => {
   const [password, setPassword] = useState("");
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -14,6 +16,9 @@ const RegisterForm = () => {
       await registerApi(username, email, password);
       setSuccess("Account created! You can log in now.");
       setError("");
+      setTimeout(() => {
+        navigate("/login"); // Redirect to login after registration
+      }, 1000);
     } catch (err: any) {
       setError("Registration failed. Try again.");
       setSuccess("");
@@ -60,6 +65,12 @@ const RegisterForm = () => {
         >
           Register
         </button>
+        <div className="text-center mt-1.5">
+          <p className="inline">Already have an account? </p>
+          <a href="/login" className="text-blue-500 hover:underline">
+            Log In
+          </a>
+        </div>
       </form>
     </div>
   );

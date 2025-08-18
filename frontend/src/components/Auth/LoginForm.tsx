@@ -1,18 +1,21 @@
 import React, { useState, useContext } from "react";
 import { login as loginApi } from "../../api/auth";
 import { AuthContext } from "../../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const LoginForm = () => {
   const auth = useContext(AuthContext);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       const res = await loginApi(username, password);
       await auth?.login(res.access_token);
+      navigate("/"); // Redirect to dashboard after login
     } catch (err: any) {
       setError("Invalid credentials");
     }
@@ -49,6 +52,13 @@ const LoginForm = () => {
         >
           Login
         </button>
+      
+        <div className="text-center mt-1.5">
+          <p className="inline">Don't have an account? </p>
+          <a href="/register" className="text-blue-500 hover:underline">
+            Register
+          </a>
+        </div>
       </form>
     </div>
   );
