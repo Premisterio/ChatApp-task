@@ -8,7 +8,7 @@ from contextlib import asynccontextmanager
 
 from database import engine
 from models import Base
-from routes import auth, messages, websocket
+from routes import auth, messages, websocket, users  # Added users import
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -65,12 +65,13 @@ app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 app.include_router(auth.router)
 app.include_router(messages.router)
 app.include_router(websocket.router)
+app.include_router(users.router)  # Added users router
 
 @app.get("/")
 def read_root():
     return {
         "message": "Messenger API + WebSocket support is running",
-        "version": "1.1.0",
+        "version": "1.2.0",
         "docs": "/docs",
         "websocket": "/ws"
     }
