@@ -61,6 +61,15 @@ const ChatList: React.FC<ChatListProps> = ({
     }
   };
 
+  const handleChatClick = (userId: number, user: User) => {
+    setChats((prev) =>
+      prev.map((chat) =>
+        chat.user.id === userId ? { ...chat, unread_count: 0 } : chat
+      )
+    );
+    onSelectUser(userId, user);
+  };
+
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -92,7 +101,7 @@ const ChatList: React.FC<ChatListProps> = ({
       <div className="p-4 border-b">
         <h2 className="text-lg font-semibold">Chats</h2>
       </div>
-      
+
       <div className="flex-1 overflow-y-auto">
         {chats.length === 0 ? (
           <div className="p-4 text-center text-gray-500">
@@ -102,7 +111,7 @@ const ChatList: React.FC<ChatListProps> = ({
           chats.map((chat) => (
             <div
               key={chat.user.id}
-              onClick={() => onSelectUser(chat.user.id, chat.user)}
+              onClick={() => handleChatClick(chat.user.id, chat.user)}
               className={`p-4 border-b cursor-pointer hover:bg-gray-100 transition-colors ${
                 selectedUserId === chat.user.id ? "bg-blue-50 border-blue-200" : ""
               }`}
@@ -116,7 +125,7 @@ const ChatList: React.FC<ChatListProps> = ({
                     <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
                   )}
                 </div>
-                
+
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-center">
                     <p className="font-medium text-gray-900 truncate">
@@ -128,7 +137,7 @@ const ChatList: React.FC<ChatListProps> = ({
                       </span>
                     )}
                   </div>
-                  
+
                   {chat.last_message && (
                     <p className="text-sm text-gray-600 truncate">
                       {chat.last_message.is_deleted
@@ -136,7 +145,7 @@ const ChatList: React.FC<ChatListProps> = ({
                         : chat.last_message.content}
                     </p>
                   )}
-                  
+
                   {chat.unread_count > 0 && (
                     <span className="inline-flex items-center justify-center px-2 py-1 text-xs font-bold text-white bg-red-500 rounded-full">
                       {chat.unread_count}

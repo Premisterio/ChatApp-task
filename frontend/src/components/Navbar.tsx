@@ -54,22 +54,6 @@ const Navbar = () => {
                 <p className="font-semibold text-gray-900">{auth.user.username}</p>
                 <p className="text-sm text-gray-500">{auth.user.email}</p>
               </div>
-              
-              <div className="py-2">
-                <button className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2">
-                  <span>⚙️</span>
-                  <span>Settings</span>
-                </button>
-                <button className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2">
-                  <span>🌙</span>
-                  <span>Dark mode</span>
-                </button>
-                <button className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2">
-                  <span>❓</span>
-                  <span>Help & Support</span>
-                </button>
-              </div>
-              
               <div className="border-t pt-2">
                 <button
                   onClick={() => {
